@@ -16,6 +16,8 @@ export default async function handler(req, res) {
     return res.status(405).send('Method Not Allowed');
   }
 
+  console.log('MongoDB URI available:', !!process.env.MONGODB_URI);
+
   try {
     const notif = req.body;
     
