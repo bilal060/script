@@ -18,6 +18,7 @@
     { "src": "/api/test-env", "dest": "/api/test-env.js" },
     { "src": "/api/mongo-test", "dest": "/api/mongo-test.js" },
     { "src": "/api/debug-mongo", "dest": "/api/debug-mongo.js" },
+    { "src": "/mobile-logs", "dest": "/mobile-logs-viewer.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

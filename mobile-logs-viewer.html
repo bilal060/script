@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mobile App Logs Viewer</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .header p {
+      margin: 0;
+      color: #666;
+    }
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group label {
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .filter-group input, .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+    .btn {
+      padding: 8px 16px;
+      background: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:hover {
+      background: #0056CC;
+    }
+    .btn-secondary {
+      background: #6c757d;
+    }
+    .btn-secondary:hover {
+      background: #545b62;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007AFF;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .log-list {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .log-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    .log-level {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .level-error { background: #dc3545; }
+    .level-warning { background: #ffc107; color: #333; }
+    .level-info { background: #17a2b8; }
+    .level-debug { background: #6c757d; }
+    .log-content {
+      flex: 1;
+    }
+    .log-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #333;
+    }
+    .log-text {
+      color: #666;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .log-meta {
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .log-meta span {
+      background: #f8f9fa;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .log-details {
+      margin-top: 8px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .empty-state {
+      padding: 40px;
+      text-align: center;
+      color: #666;
+    }
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .auto-refresh input[type="checkbox"] {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📱 Mobile App Logs Viewer</h1>
+    <p>Real-time monitoring and analysis of mobile app logs, errors, and user interactions</p>
+  </div>
+
+  <div class="filters">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>App Name</label>
+        <input type="text" id="appFilter" placeholder="Filter by app name">
+      </div>
+      <div class="filter-group">
+        <label>Log Level</label>
+        <select id="logLevelFilter">
+          <option value="">All Levels</option>
+          <option value="error">Error</option>
+          <option value="warning">Warning</option>
+          <option value="info">Info</option>
+          <option value="debug">Debug</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select id="categoryFilter">
+          <option value="">All Categories</option>
+          <option value="notification">Notification</option>
+          <option value="error">Error</option>
+          <option value="event">Event</option>
+          <option value="user_action">User Action</option>
+          <option value="system">System</option>
+          <option value="performance">Performance</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Device ID</label>
+        <input type="text" id="deviceFilter" placeholder="Filter by device">
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>User ID</label>
+        <input type="text" id="userFilter" placeholder="Filter by user">
+      </div>
+      <div class="filter-group">
+        <label>Screen</label>
+        <input type="text" id="screenFilter" placeholder="Filter by screen">
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="searchFilter" placeholder="Search in title/content">
+      </div>
+      <div class="filter-group">
+        <label>Limit</label>
+        <input type="number" id="limitFilter" placeholder="Max results" min="1" max="100">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn" onclick="fetchLogs()">🔍 Apply Filters</button>
+      <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Clear</button>
+      <div class="auto-refresh">
+        <input type="checkbox" id="autoRefresh" checked>
+        <label for="autoRefresh">Auto-refresh (5s)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card">
+      <div class="stat-number" id="totalLogs">0</div>
+      <div class="stat-label">Total Logs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="errorLogs">0</div>
+      <div class="stat-label">Errors</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="warningLogs">0</div>
+      <div class="stat-label">Warnings</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="uniqueUsers">0</div>
+      <div class="stat-label">Unique Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="uniqueDevices">0</div>
+      <div class="stat-label">Unique Devices</div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="log-list">
+    <div id="logList" class="empty-state">Loading mobile app logs...</div>
+  </div>
+
+  <script>
+    let autoRefresh = true;
+    let refreshInterval;
+
+    function showStatus(message, type = 'success') {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+      if (type === 'success') {
+        setTimeout(() => statusDiv.innerHTML = '', 3000);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('appFilter').value = '';
+      document.getElementById('logLevelFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('deviceFilter').value = '';
+      document.getElementById('userFilter').value = '';
+      document.getElementById('screenFilter').value = '';
+      document.getElementById('searchFilter').value = '';
+      document.getElementById('limitFilter').value = '';
+      fetchLogs();
+    }
+
+    function getLevelEmoji(level) {
+      const emojis = {
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️',
+        'debug': '🔍'
+      };
+      return emojis[level] || '📝';
+    }
+
+    function formatDuration(duration) {
+      if (!duration) return '';
+      return duration < 1000 ? `${duration}ms` : `${(duration/1000).toFixed(1)}s`;
+    }
+
+    function formatMemory(memory) {
+      if (!memory) return '';
+      return memory;
+    }
+
+    async function fetchLogs() {
+      try {
+        const filters = {
+          app: document.getElementById('appFilter').value,
+          logLevel: document.getElementById('logLevelFilter').value,
+          category: document.getElementById('categoryFilter').value,
+          deviceId: document.getElementById('deviceFilter').value,
+          userId: document.getElementById('userFilter').value,
+          screen: document.getElementById('screenFilter').value,
+          search: document.getElementById('searchFilter').value,
+          limit: document.getElementById('limitFilter').value
+        };
+
+        const queryParams = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) queryParams.append(key, value);
+        });
+
+        const url = `/api/notifications-mongo${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        const list = document.getElementById('logList');
+        
+        if (!data.notifications || data.notifications.length === 0) {
+          list.innerHTML = '<div class="empty-state">No mobile app logs found</div>';
+          updateStats([]);
+          return;
+        }
+
+        list.innerHTML = '';
+        data.notifications.forEach(log => {
+          const item = document.createElement('div');
+          item.className = 'log-item';
+          
+          const levelEmoji = getLevelEmoji(log.logLevel);
+          const levelClass = `level-${log.logLevel || 'info'}`;
+          
+          let detailsHtml = '';
+          if (log.deviceModel || log.appVersion || log.osVersion) {
+            detailsHtml += `<div><strong>Device:</strong> ${log.deviceModel || 'Unknown'} | ${log.appVersion || 'Unknown'} | ${log.osVersion || 'Unknown'}</div>`;
+          }
+          if (log.screen || log.action) {
+            detailsHtml += `<div><strong>Context:</strong> ${log.screen || 'Unknown'} | ${log.action || 'Unknown'}</div>`;
+          }
+          if (log.duration || log.memoryUsage) {
+            detailsHtml += `<div><strong>Performance:</strong> ${formatDuration(log.duration)} | ${formatMemory(log.memoryUsage)}</div>`;
+          }
+          if (log.errorCode || log.errorStack) {
+            detailsHtml += `<div><strong>Error:</strong> ${log.errorCode || ''} ${log.errorStack ? '| ' + log.errorStack.substring(0, 100) + '...' : ''}</div>`;
+          }
+          if (log.metadata && Object.keys(log.metadata).length > 0) {
+            detailsHtml += `<div><strong>Metadata:</strong> ${JSON.stringify(log.metadata)}</div>`;
+          }
+          
+          item.innerHTML = `
+            <div class="log-level ${levelClass}">${levelEmoji}</div>
+            <div class="log-content">
+              <div class="log-title">${log.title || 'No title'}</div>
+              <div class="log-text">${log.content || 'No content'}</div>
+              <div class="log-meta">
+                <span><strong>${log.app || 'Unknown'}</strong></span>
+                <span>${log.logLevel || 'info'}</span>
+                <span>${log.category || 'notification'}</span>
+                ${log.userId ? `<span>User: ${log.userId}</span>` : ''}
+                ${log.deviceId ? `<span>Device: ${log.deviceId}</span>` : ''}
+                <span>${new Date(log.timestamp).toLocaleString()}</span>
+              </div>
+              ${detailsHtml ? `<div class="log-details">${detailsHtml}</div>` : ''}
+            </div>
+          `;
+          list.appendChild(item);
+        });
+
+        updateStats(data.notifications);
+        showStatus(`Loaded ${data.count} mobile app logs`);
+      } catch (error) {
+        console.error('Error fetching mobile app logs:', error);
+        showStatus('Error loading mobile app logs: ' + error.message, 'error');
+      }
+    }
+
+    function updateStats(logs) {
+      const stats = {
+        total: logs.length,
+        errors: logs.filter(log => log.logLevel === 'error').length,
+        warnings: logs.filter(log => log.logLevel === 'warning').length,
+        uniqueUsers: new Set(logs.filter(log => log.userId).map(log => log.userId)).size,
+        uniqueDevices: new Set(logs.filter(log => log.deviceId).map(log => log.deviceId)).size
+      };
+
+      document.getElementById('totalLogs').textContent = stats.total;
+      document.getElementById('errorLogs').textContent = stats.errors;
+      document.getElementById('warningLogs').textContent = stats.warnings;
+      document.getElementById('uniqueUsers').textContent = stats.uniqueUsers;
+      document.getElementById('uniqueDevices').textContent = stats.uniqueDevices;
+    }
+
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      if (autoRefresh) {
+        refreshInterval = setInterval(fetchLogs, 5000);
+      }
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    }
+
+    // Event listeners
+    document.getElementById('autoRefresh').addEventListener('change', (e) => {
+      autoRefresh = e.target.checked;
+      if (autoRefresh) {
+        startAutoRefresh();
+      } else {
+        stopAutoRefresh();
+      }
+    });
+
+    // Initial load
+    fetchLogs();
+    startAutoRefresh();
+
+    // Pause auto-refresh when tab is not visible
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAutoRefresh();
+      } else if (autoRefresh) {
+        startAutoRefresh();
+      }
+    });
+  </script>
+</body>
+</html> 
