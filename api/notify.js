@@ -3,6 +3,9 @@ import path from 'path';
 
 const filePath = path.resolve('/tmp', 'notifications.json');
 
+// In-memory storage for immediate access
+let memoryStorage = [];
+
 // Ensure the file exists
 function ensureFileExists() {
   if (!fs.existsSync(filePath)) {
@@ -15,10 +18,13 @@ function readNotifications() {
   ensureFileExists();
   try {
     const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
+    const fileData = JSON.parse(data);
+    // Merge file data with memory storage
+    const allNotifications = [...memoryStorage, ...fileData];
+    return allNotifications;
   } catch (error) {
     console.error('Error reading notifications:', error);
-    return [];
+    return memoryStorage;
   }
 }
 
@@ -52,14 +58,17 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString()
     };
 
-    // Read existing notifications
-    const notifications = readNotifications();
+    // Add to memory storage for immediate access
+    memoryStorage.push(notification);
     
-    // Add new notification
-    notifications.push(notification);
-    
-    // Write back to file
-    writeNotifications(notifications);
+    // Also try to save to file (for persistence across deployments)
+    try {
+      const fileNotifications = readNotifications();
+      fileNotifications.push(notification);
+      writeNotifications(fileNotifications);
+    } catch (fileError) {
+      console.log('File storage failed, using memory only:', fileError.message);
+    }
     
     console.log('Received notification:', notification);
     res.status(200).json({ 
