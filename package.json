@@ -1,0 +1,35 @@
+{
+  "name": "mobile-notifications-server",
+  "version": "1.0.0",
+  "description": "A simple server to save and retrieve mobile notifications with a real-time web interface",
+  "main": "api/notify.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "test": "node test-notifications.js"
+  },
+  "keywords": [
+    "notifications",
+    "mobile",
+    "api",
+    "vercel",
+    "serverless",
+    "real-time"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mobile-notifications-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/mobile-notifications-server/issues"
+  },
+  "homepage": "https://github.com/yourusername/mobile-notifications-server#readme"
+} 
