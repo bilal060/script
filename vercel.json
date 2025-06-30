@@ -2,10 +2,13 @@
   "version": 2,
   "builds": [
     { "src": "api/notify.js", "use": "@vercel/node" },
-    { "src": "api/notifications.js", "use": "@vercel/node" }
+    { "src": "api/notifications.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/notify", "dest": "api/notify.js" },
-    { "src": "/api/notifications", "dest": "api/notifications.js" }
+    { "src": "/api/notifications", "dest": "api/notifications.js" },
+    { "src": "/view.html", "dest": "/public/view.html" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }

@@ -11,12 +11,27 @@ export default function handler(req, res) {
   try {
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      return res.status(200).json([]);
+      console.log('No notifications file found, returning empty array');
+      return res.status(200).json({
+        count: 0,
+        notifications: [],
+        message: 'No notifications found (file does not exist)'
+      });
     }
 
     // Read and parse notifications
     const data = fs.readFileSync(filePath, 'utf8');
-    let notifications = JSON.parse(data);
+    let notifications = [];
+    
+    try {
+      notifications = JSON.parse(data);
+      if (!Array.isArray(notifications)) {
+        notifications = [];
+      }
+    } catch (parseError) {
+      console.error('Error parsing notifications file:', parseError);
+      notifications = [];
+    }
 
     // Handle query parameters
     const { limit, app, sort = 'desc' } = req.query;
@@ -45,10 +60,16 @@ export default function handler(req, res) {
 
     res.status(200).json({
       count: notifications.length,
-      notifications
+      notifications,
+      message: notifications.length > 0 ? 'Notifications retrieved successfully' : 'No notifications found'
     });
   } catch (error) {
     console.error('Error reading notifications:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to read notifications',
+      count: 0,
+      notifications: []
+    });
   }
 }

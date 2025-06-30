@@ -1,7 +1,10 @@
 // Test script for the notification API
 // Run with: node test-notifications.js
 
-const BASE_URL = 'http://localhost:3000'; // Change this to your server URL
+const https = require('https');
+const http = require('http');
+
+const BASE_URL = 'https://script-bioa.vercel.app'; // Your Vercel URL
 
 const sampleNotifications = [
   {
@@ -31,19 +34,59 @@ const sampleNotifications = [
   }
 ];
 
-async function sendNotification(notification) {
-  try {
-    const response = await fetch(`${BASE_URL}/api/notify`, {
-      method: 'POST',
+function makeRequest(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const isHttps = urlObj.protocol === 'https:';
+    const client = isHttps ? https : http;
+    
+    const requestOptions = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || (isHttps ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(notification)
+        ...options.headers
+      }
+    };
+
+    const req = client.request(requestOptions, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        try {
+          const jsonData = JSON.parse(data);
+          resolve({ status: res.statusCode, data: jsonData });
+        } catch (error) {
+          resolve({ status: res.statusCode, data: data });
+        }
+      });
     });
 
-    const result = await response.json();
-    console.log(`✅ Sent notification from ${notification.app}:`, result);
-    return result;
+    req.on('error', (error) => {
+      reject(error);
+    });
+
+    if (options.body) {
+      req.write(JSON.stringify(options.body));
+    }
+    
+    req.end();
+  });
+}
+
+async function sendNotification(notification) {
+  try {
+    const response = await makeRequest(`${BASE_URL}/api/notify`, {
+      method: 'POST',
+      body: notification
+    });
+
+    console.log(`✅ Sent notification from ${notification.app}:`, response.data);
+    return response.data;
   } catch (error) {
     console.error(`❌ Failed to send notification from ${notification.app}:`, error.message);
     return null;
@@ -52,10 +95,9 @@ async function sendNotification(notification) {
 
 async function fetchAllNotifications() {
   try {
-    const response = await fetch(`${BASE_URL}/api/notifications`);
-    const data = await response.json();
-    console.log(`📱 Total notifications: ${data.count}`);
-    return data.notifications;
+    const response = await makeRequest(`${BASE_URL}/api/notifications`);
+    console.log(`📱 Total notifications: ${response.data.count || 0}`);
+    return response.data.notifications || [];
   } catch (error) {
     console.error('❌ Failed to fetch notifications:', error.message);
     return [];

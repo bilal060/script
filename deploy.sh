@@ -39,4 +39,12 @@ echo "🧪 To test your deployment:"
 echo "   1. Update BASE_URL in test-notifications.js"
 echo "   2. Run: node test-notifications.js"
 echo ""
-echo "📚 For more info, see README.md" 
+echo "📚 For more info, see README.md"
+
+curl -X POST https://script-bioa.vercel.app/api/notify \
+  -H "Content-Type: application/json" \
+  -d '{"app":"TestApp","title":"Hello","content":"World"}'
+
+curl https://script-bioa.vercel.app/api/notifications
+
+node test-notifications.js 
