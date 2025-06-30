@@ -26,12 +26,17 @@
 1. Click "Connect" on your cluster
 2. Choose "Connect your application"
 3. Copy the connection string
-4. Replace `<password>` with your actual password
+4. Replace `<password>` with your actual password (URL-encoded if needed)
 5. Replace `<dbname>` with `notifications`
 
 **Example connection string:**
 ```
-mongodb+srv://notification-user:your-password@cluster0.xxxxx.mongodb.net/notifications?retryWrites=true&w=majority
+mongodb+srv://dbuser:your-password@cluster0.xxxxx.mongodb.net/notifications?retryWrites=true&w=majority
+```
+
+**For your specific case (with URL-encoded password):**
+```
+mongodb+srv://dbuser:Bil%40l112@cluster0.ey6gj6g.mongodb.net/notifications?retryWrites=true&w=majority
 ```
 
 ### Step 4: Add to Vercel Environment Variables
@@ -64,6 +69,9 @@ curl -X POST https://your-project.vercel.app/api/notify-mongo \
 
 # Fetch notifications from MongoDB
 curl https://your-project.vercel.app/api/notifications-mongo
+
+# Test MongoDB connection
+curl https://your-project.vercel.app/api/mongo-test
 ```
 
 ### Update your test scripts:
@@ -90,6 +98,7 @@ const BASE_URL = 'https://your-project.vercel.app';
 ### MongoDB Endpoints:
 - **POST** `/api/notify-mongo` - Save notification to MongoDB
 - **GET** `/api/notifications-mongo` - Fetch notifications from MongoDB
+- **GET** `/api/mongo-test` - Test MongoDB connection
 
 ### Original Endpoints (still available):
 - **POST** `/api/notify` - Save notification (ephemeral)
@@ -131,6 +140,7 @@ curl "https://your-project.vercel.app/api/notifications-mongo?sort=asc"
 2. **Check network access** - Ensure IP whitelist includes `0.0.0.0/0`
 3. **Check credentials** - Verify username/password in connection string
 4. **Check database name** - Make sure it's `notifications`
+5. **URL-encode special characters** - Use `%40` for `@` in passwords
 
 ### View MongoDB Data:
 
@@ -142,7 +152,7 @@ curl "https://your-project.vercel.app/api/notifications-mongo?sort=asc"
 ## 🚀 Next Steps
 
 1. **Set up MongoDB Atlas** (follow steps above)
-2. **Add environment variable** to Vercel
+2. **Add environment variables** to Vercel
 3. **Deploy** your changes
 4. **Test** with the MongoDB endpoints
 5. **Update** your mobile apps to use `/api/notify-mongo`

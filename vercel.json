@@ -7,6 +7,7 @@
     { "src": "api/notifications-mongo.js", "use": "@vercel/node" },
     { "src": "api/test-env.js", "use": "@vercel/node" },
     { "src": "api/mongo-test.js", "use": "@vercel/node" },
+    { "src": "api/debug-mongo.js", "use": "@vercel/node" },
     { "src": "*.html", "use": "@vercel/static" }
   ],
   "routes": [
@@ -16,6 +17,7 @@
     { "src": "/api/notifications-mongo", "dest": "/api/notifications-mongo.js" },
     { "src": "/api/test-env", "dest": "/api/test-env.js" },
     { "src": "/api/mongo-test", "dest": "/api/mongo-test.js" },
+    { "src": "/api/debug-mongo", "dest": "/api/debug-mongo.js" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
