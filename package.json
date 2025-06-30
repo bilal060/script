@@ -15,14 +15,17 @@
     "api",
     "vercel",
     "serverless",
-    "real-time"
+    "real-time",
+    "mongodb"
   ],
   "author": "Your Name",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mongodb": "^6.3.0"
+  },
   "devDependencies": {},
   "repository": {
     "type": "git",
