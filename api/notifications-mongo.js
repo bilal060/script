@@ -55,6 +55,26 @@ const sampleNotifications = [
 ];
 
 export default async function handler(req, res) {
+  if (req.method === 'DELETE') {
+    // Handle DELETE request to clear all logs
+    try {
+      const mongoClient = await connectToMongo();
+      const database = mongoClient.db('notifications');
+      const collection = database.collection('notifications');
+      
+      const result = await collection.deleteMany({});
+      
+      res.status(200).json({
+        message: `Successfully cleared ${result.deletedCount} logs from MongoDB`,
+        deletedCount: result.deletedCount
+      });
+    } catch (error) {
+      console.error('Error clearing logs from MongoDB:', error);
+      res.status(500).json({ error: 'Failed to clear logs' });
+    }
+    return;
+  }
+  
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
