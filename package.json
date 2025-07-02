@@ -24,9 +24,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "mongodb": "^6.3.0"
+    "mongodb": "^6.17.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/mobile-notifications-server.git"
@@ -35,4 +34,4 @@
     "url": "https://github.com/yourusername/mobile-notifications-server/issues"
   },
   "homepage": "https://github.com/yourusername/mobile-notifications-server#readme"
-} 
+}
